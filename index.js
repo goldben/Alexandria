@@ -1,8 +1,7 @@
 const express = require("express");
 const app = express();
 const server = require("http").Server(app);
-const io = require("socket.io")(server, { origins: "localhost:8080" });
-
+const fs = require("fs");
 const compression = require("compression");
 const db = require("./utils/db");
 const csurf = require("csurf");
@@ -14,11 +13,11 @@ const bc = require("./utils/bc");
 const multer = require(`multer`);
 const uidSafe = require(`uid-safe`);
 const path = require(`path`);
-const s3 = require("./s3");
+// const s3 = require("./s3");
 const amazonUrl = require(`./config`).s3Url;
 const diskStorage = multer.diskStorage({
     destination: function(req, file, callback) {
-        callback(null, __dirname + "/uploads");
+        callback(null, __dirname + "/public/documents");
     },
     filename: function(req, file, callback) {
         uidSafe(24).then(function(uid) {
@@ -62,10 +61,7 @@ const cookieSessionMiddleware = cookieSession({
     maxAge: 1000 * 60 * 60 * 24 * 90
 });
 app.use(cookieSessionMiddleware);
-io.use(function(socket, next) {
-    console.log("io is working");
-    cookieSessionMiddleware(socket.request, socket.request.res, next);
-});
+
 ///////////////handle Vulnerabilities//////////////
 
 app.use(csurf()); //place right after bodyParser and cookieSession///
@@ -163,12 +159,12 @@ app.post("/find-docs", (req, res) => {
 app.post(
     "/store-document",
     uploader.single("file"),
-    s3.upload,
+    // s3.upload,
     async (req, res) => {
         console.log("*******store document*******");
-        let imageUrl =
-            "https://s3.amazonaws.com/spicedling/" + req.file.filename;
-        console.log("*******store document*******", imageUrl);
+        console.log("req.file", req.file);
+        // let imageUrl = "https://s3.amazonaws.com/spicedling/" + req.file.filename;
+        let imageUrl = "/documents/" + req.file.filename;
         const userId = req.session.userId;
         const text = req.body.text;
         const title = req.body.title || "New Doc";
@@ -309,8 +305,8 @@ app.post("/delete", async (req, res) => {
     let s3Url = req.body.url;
     let imageId = req.body.id;
     try {
-        const s3Delete = await s3.deleteImage(s3Url);
         const docDelte = await db.deleteDoc(imageId);
+        const s3Delete = await fs.unlinkSync(req.body.url); // s3.deleteImage(s3Url);
         res.json({ success: true });
     } catch (err) {
         console.log("error", err);
@@ -334,4 +330,3 @@ app.get("*", function(req, res) {
 server.listen(process.env.PORT || 8080, function() {
     console.log("I'm listening.");
 });
-///////////////////////////////SOCKET IO ///////////////////////////////////////
