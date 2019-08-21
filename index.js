@@ -327,6 +327,7 @@ app.get("*", function(req, res) {
     res.sendFile(__dirname + "/index.html");
 });
 
-server.listen(process.env.PORT || 8080, function() {
-    console.log("I'm listening.");
-});
+if (require.main == module) {
+    //HEROKU:
+    app.listen(process.env.PORT || 8080, () => console.log("Im listening"));
+}
