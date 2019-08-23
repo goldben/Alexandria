@@ -9,10 +9,8 @@ React, Redux, Node.js, Express, PostgreSQL, AWS S3.
 
 Install dependencies
     npm install
-Start dev env
-    node bundle-server.js
 Start the node backend server
-    node index.js
+    npm start
 ## Screen shots:
 
 ![alexandria001](https://user-images.githubusercontent.com/49070258/63098442-3dc55e80-bf73-11e9-83c0-ed7cf5f21c08.PNG)
